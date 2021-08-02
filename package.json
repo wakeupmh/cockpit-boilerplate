@@ -1,0 +1,68 @@
+{
+  "name": "cockpit",
+  "version": "0.1.0",
+  "description": "A cockpit for all authorizer's projects",
+  "main": "index.js",
+  "repository": "https://devopmh@bitbucket.org/entrerprise_desenv/cockpit.git",
+  "author": "@authorizer",
+  "license": "ISC",
+  "private": true,
+  "scripts": {
+    "cz": "git-cz",
+    "test:verbose": "jest --passWithNoTests --runInBand",
+    "test:unit": "npm test -- --watch -c jest.config.js",
+    "test:staged": "npm test -- --findRelatedTests",
+    "cover": "npm test -- --coverage",
+    "offline": "sls offline --stage=dev --httpPort=3001",
+    "test": "jest",
+    "make-badges": "istanbul-badges-readme",
+    "lint": "npx eslint .",
+    "terraform:init": "terraform init -backend-config=\"bkt-sa-east-1-authorizer-tf-state-dev\" -backend-config=\"key=cockpit/tf-state\" -backend-config=\"region=sa-east-1\""
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run cover && npm run make-badges && git add 'README.md'",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "dependencies": {
+    "@middy/core": "^1.0.0",
+    "@middy/do-not-wait-for-empty-event-loop": "^1.4.0",
+    "axios": "^0.21.0",
+    "bluebird": "^3.7.2",
+    "http-errors": "^1.7.3",
+    "ioredis": "^4.19.2",
+    "pg": "^8.3.3",
+    "sequelize": "^6.3.5",
+    "winston": "^3.2.1",
+    "yup": "^0.31.0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "@stryker-mutator/core": "^4.1.2",
+    "@stryker-mutator/jest-runner": "^4.1.2",
+    "aws-sdk": "^2.710.0",
+    "cz-conventional-changelog": "^3.2.0",
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-no-loops": "^0.3.0",
+    "eslint-plugin-no-secrets": "^0.6.8",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "faker": "^5.1.0",
+    "husky": "^4.2.3",
+    "istanbul-badges-readme": "^1.0.5",
+    "jest": "^26.6.3",
+    "serverless": "^2.11.1",
+    "serverless-offline": "^6.0.0-alpha.67",
+    "standard-version": "^8.0.0"
+  }
+}

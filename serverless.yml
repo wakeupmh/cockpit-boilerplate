@@ -1,0 +1,121 @@
+service: cockpit
+
+custom:
+  profiles:
+    dev: 002658803700
+    prd: 418380652505
+  general: 
+    oi: 600001501
+    serverless-offline:
+      useChildProcesses: true
+      port: 15001
+    project: cockpit  
+
+provider:
+  name: aws
+  apiGateway:
+      apiKeySourceType: HEADER
+  apiKeys:
+    - ${self:custom.general.project}-${opt:stage}
+  endpointType: REGIONAL
+  runtime: nodejs12.x
+  stage: ${opt:stage}
+  region: sa-east-1
+  role: arn:aws:iam::${self:custom.profiles.${opt:stage}}:role/custom_product_authorizer
+  memorySize: 128
+  timeout: 30
+  environment: 
+    DATA_PROVIDER_URL: https://busca-management-prd.azure-api.net/local/v1
+    DATA_PROVIDER_API_KEY: 860e920c00b14f3d8963e20b3cf8695e
+    DATABASE_HOST: localhost
+    DATABASE_NAME: authorizer
+    DATABASE_USERNAME: postgres
+    DATABASE_PASSWORD: pg@123
+    DATABASE_PORT: 5433
+  vpc:
+    securityGroupIds:
+      - sg-0357659d70811e6a5 #DEV
+    subnetIds:
+      - subnet-893657d1 #DEV
+      - subnet-25840a42 #DEV
+
+functions:
+  getExamTypes:
+      handler: src/credential/index.getExamTypes
+      events:
+        - http:
+            method: get
+            path: examTypes
+  getCredential:
+    handler: src/credential/index.getCredential
+    events:
+      - http:
+          method: get
+          path: credential/{id}
+  filterCredential:
+    handler: src/credential/index.filterCredential
+    events:
+      - http:
+          method: get
+          path: credentials
+    environment:
+      REDIS_HOST: ${ssm:cockpit-${opt:stage}-redis-host}
+      REDIS_PASSWORD: ${ssm:cockpit-${opt:stage}-redis-password}
+  putCredential:
+    handler: src/credential/index.putCredential
+    events:
+      - http:
+          method: put
+          path: credential/{id}
+  postCredential:
+    handler: src/credential/index.postCredential
+    events:
+      - http:
+          method: post
+          path: credential
+  deleteCredential:
+    handler: src/credential/index.deleteCredential
+    events:
+      - http:
+          method: delete
+          path: credential/{id}
+  getAnsOperators:
+    handler: src/ans/index.getAnsOperators
+    events:
+      - http:
+          method: get
+          path: ans
+  getAnsOperatorsWithCredential:
+    handler: src/credential/index.getAnsOperatorsWithCredential
+    events:
+      - http:
+          method: get
+          path: credential/ansOperators
+  getBrandsByAnsOperator:
+    handler: src/credential/index.getBrandsByAnsOperator
+    events:
+      - http:
+          method: get
+          path: credentials/ansOperators/{id}/brands
+
+package:
+  excludeDevDependencies: true
+  individually: true
+  exclude:
+    - .git/**
+    - .vscode/**
+    - test/**
+    - coverage/**
+    - .nyc_output/*
+    - .eslintrc
+    - .versionrc
+    - .gitignore
+    - .commitlint.config.js
+    - jsconfig.json
+    - README.md
+    - CHANGELOG.md
+    - nyc.config.js
+    - docs
+    
+plugins:
+  - serverless-offline
